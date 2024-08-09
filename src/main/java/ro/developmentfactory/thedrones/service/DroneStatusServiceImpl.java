@@ -80,13 +80,14 @@ public class DroneStatusServiceImpl implements DroneStatusService {
         if (droneStatus.getDrone() == null) {
             throw new IllegalArgumentException("Drone must not be null");
         }
-
-        DroneStatusResponse response = new DroneStatusResponse();
-        response.setIdDroneStatus(droneStatus.getIdDroneStatus());
-        response.setIdDrone(droneStatus.getDrone().getIdDrone());
-        response.setCurrentPositionX(droneStatus.getCurrentPositionX());
-        response.setCurrentPositionY(droneStatus.getCurrentPositionY());
-        response.setFacingDirection(droneStatus.getFacingDirection());
+        DroneStatusResponse response = DroneStatusResponse.builder()
+                .idDroneStatus(droneStatus.getIdDroneStatus())
+                .idDrone(droneStatus.getDrone().getIdDrone())
+                .currentPositionX(droneStatus.getCurrentPositionX())
+                .currentPositionY(droneStatus.getCurrentPositionY())
+                .facingDirection(droneStatus.getFacingDirection())
+                .build();
+        logger.debug("Converted drone status to response: {}", response);
 
         return response;
     }

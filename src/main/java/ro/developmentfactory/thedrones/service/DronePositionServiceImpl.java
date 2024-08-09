@@ -6,12 +6,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
+import ro.developmentfactory.thedrones.controller.dto.TurnDirection;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 import ro.developmentfactory.thedrones.repository.DroneStatusRepository;
 import ro.developmentfactory.thedrones.repository.entity.Direction;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -28,46 +30,37 @@ public class DronePositionServiceImpl implements DronePositionService {
 
     @Override
     @Transactional
-    public DroneStatusResponse turningDirection(DroneStatusResponse droneStatusResponse) {
-        UUID idDrone = droneStatusResponse.getIdDrone();
+    public DroneStatusResponse turn(UUID idDrone, TurnDirection turnDirection) {
 
         Drone drone = droneRepository.findById(idDrone)
                 .orElseThrow(() -> new EntityNotFoundException("Drone with id " + idDrone + " not found"));
 
-        if (droneStatusResponse.getTurnDirection() == null) {
-            throw new IllegalArgumentException("Turn direction cannot be null");
-        }
+     DroneStatus currentStatus = drone.getDroneStatus();
+     Objects.requireNonNull(currentStatus, "Drone status must not be null");
 
-        DroneStatus currentStatus = drone.getDroneStatus();
+     Direction newDirection = (turnDirection == TurnDirection.RIGHT)
+             ? currentStatus.getFacingDirection().turnRight()
+             : currentStatus.getFacingDirection().turnLeft();
 
-        Direction newDirection;
-
-        if (droneStatusResponse.getTurnDirection() == DroneStatusResponse.TurnDirection.RIGHT) {
-            newDirection = currentStatus.getFacingDirection().turnRight();
-        } else {
-            newDirection = currentStatus.getFacingDirection().turnLeft();
-        }
-
-        currentStatus.setFacingDirection(newDirection);
-
-        droneStatusRepository.save(currentStatus);
-        return convertToResponse(currentStatus);
+     currentStatus.setFacingDirection(newDirection);
+     droneStatusRepository.save(currentStatus);
+     return convertToResponse(currentStatus);
     }
 
     @Override
-    public DroneStatusResponse moveForward(DroneStatusResponse droneStatusResponse) {
-        UUID idDrone = droneStatusResponse.getIdDrone();
+    public DroneStatusResponse moveForward(UUID idDrone) {
+
         log.debug("Moving forward for drone: {}", idDrone);
 
         Drone drone = droneRepository.findById(idDrone)
                 .orElseThrow(() -> new EntityNotFoundException("Drone with id " + idDrone + " not found"));
 
         DroneStatus droneStatus = drone.getDroneStatus();
-        if (droneStatus == null) {
-            throw new IllegalArgumentException("DroneStatus must not be null");
-        }
-        validateMove(droneStatus);
-        updatePosition(droneStatus);
+        Objects.requireNonNull(droneStatus, "Drone status must not be null");
+
+        Position newPosition = calculateNewPosition(droneStatus);
+        validateMove(newPosition);
+        updatePosition(droneStatus, newPosition);
 
         droneStatusRepository.save(droneStatus);
         log.debug("Drone status updated successfully: {}", droneStatus);
@@ -75,33 +68,30 @@ public class DronePositionServiceImpl implements DronePositionService {
         return convertToResponse(droneStatus);
     }
 
-    private void updatePosition(DroneStatus droneStatus) {
-        Position newPosition = calculateNewPosition(droneStatus);
-        int newX = newPosition.getX();
-        int newY = newPosition.getY();
-
-        if(newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
-            droneStatus.setCurrentPositionX(newX);
-            droneStatus.setCurrentPositionY(newY);
+    private void updatePosition(DroneStatus droneStatus, Position newPosition) {
+        if(isPositionValid(newPosition)) {
+            droneStatus.setCurrentPositionX(newPosition.getX());
+            droneStatus.setCurrentPositionY(newPosition.getY());
             droneStatus.getDrone().setCountMove(droneStatus.getDrone().getCountMove() + 1);
-            log.debug("New position for drone:({}, {})", newX, newY);
+            log.debug("New position for drone:({}, {})", newPosition.getX(), newPosition.getY());
         }else {
-            log.error("Drone cannot move because it's a Drone cannot move because it's at the edge of the field. Current position: ({}, {}), New position: ({}, {})",
-                    droneStatus.getCurrentPositionX(), droneStatus.getCurrentPositionY(), newX, newY);
+            log.error("Drone cannot move because it's at the edge of the field. Current position: ({}, {}), New position: ({}, {})",
+                    droneStatus.getCurrentPositionX(), droneStatus.getCurrentPositionY(), newPosition.getX(), newPosition.getY());
         }
     }
 
 
-    private void validateMove(DroneStatus droneStatus) {
-        Position newPosition = calculateNewPosition(droneStatus);
-        int newX = newPosition.getX();
-        int newY = newPosition.getY();
-
-        if(newX < 0 ||  newX >= 10 || newY < 0 || newY >= 10) {
-            throw new IllegalArgumentException("Drone cannot move because it’s at the edge of the field");
-        }
+    private void validateMove(Position newPosition) {
+       if(!isPositionValid(newPosition)) {
+           throw new IllegalArgumentException("Drone cannot move because it's at the edge of the field.");
+       }
     }
+private boolean isPositionValid(Position position){
+        int x = position.getX();
+        int y = position.getY();
 
+        return x >= 0 && x < 10 && y >= 0 && y < 10;
+}
 
     private Position calculateNewPosition(DroneStatus droneStatus) {
         int x = droneStatus.getCurrentPositionX();
@@ -129,7 +119,7 @@ public class DronePositionServiceImpl implements DronePositionService {
 
 
     private DroneStatusResponse convertToResponse(DroneStatus droneStatus) {
-        if (droneStatus.getDrone() == null) {
+        if (droneStatus == null) {
             throw new IllegalArgumentException("Drone must not be null");
         }
 

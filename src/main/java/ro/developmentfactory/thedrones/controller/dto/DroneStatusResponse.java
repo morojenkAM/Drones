@@ -20,14 +20,7 @@ public class DroneStatusResponse {
     private Integer currentPositionY;
     private Direction facingDirection;
     private UUID idDrone;
-    private TurnDirection turnDirection;
 
-    public DroneStatusResponse(UUID idDrone) {
-        this.idDrone = idDrone;
-    }
-    public enum TurnDirection {
-        LEFT, RIGHT
-    }
 
 }
 
