@@ -1,4 +1,4 @@
-package ro.developmentfactory.thedrones.service;
+package ro.developmentfactory.thedrones.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
