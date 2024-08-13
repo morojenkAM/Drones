@@ -10,13 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ro.developmentfactory.thedrones.controller.dto.TurnDirection;
-import ro.developmentfactory.thedrones.repository.entity.Drone;
-import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 
 import java.util.UUID;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ro.developmentfactory.thedrones.TestDefaults.*;
-import static ro.developmentfactory.thedrones.service.Defaults.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -25,7 +21,7 @@ public class DronePositionControllerIntegrationTest extends IntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {"RIGHT"})
     @DisplayName("Test turn to save successfully with different directions")
-    public void testTurn(TurnDirection turnDirection) throws Exception {
+    public void testTurnRight(TurnDirection turnDirection) throws Exception {
         UUID droneId = insertDefaultDroneAndDroneStatus();
 
         mockMvc.perform(MockMvcRequestBuilders.post("/drones/{id}/turn/{direction}", droneId, turnDirection.name())
@@ -36,24 +32,41 @@ public class DronePositionControllerIntegrationTest extends IntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", " ","\t", "\n"})
-    @DisplayName("test save turn bad request for blank or emty drone name")
-    public void testSaveTurnBlankOrEmptyDirection(String turnDirection) throws Exception {
+    @ValueSource(strings = {"LEFT"})
+    @DisplayName("Test turn to save successfully with different directions")
+    public void testTurnLeft(TurnDirection turnDirection) throws Exception {
         UUID droneId = insertDefaultDroneAndDroneStatus();
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/drones/{id}/turn/{direction}",droneId,turnDirection)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+        mockMvc.perform(MockMvcRequestBuilders.post("/drones/{id}/turn/{direction}", droneId, turnDirection.name())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.facingDirection").value("W"))
                 .andReturn();
     }
+
     @Test
-    @DisplayName("test save turn direction bad request for null direction")
-    public void testSaveTurnNullDirection() throws Exception {
+    @DisplayName("Test move forward successfully")
+    public void testMoveForward() throws Exception {
         UUID droneId = insertDefaultDroneAndDroneStatus();
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/drones/{id}/turn/{direction}",droneId,null)
-        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+        mockMvc.perform(MockMvcRequestBuilders.post("/drones/{id}/goForward", droneId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPositionX").value(DRONE_STATUS_POSITION_X ))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPositionY").value(DRONE_STATUS_POSITION_Y + 1))
                 .andReturn();
     }
+
+    @Test
+    @DisplayName("Test move forward with non-existing drone")
+    public void testMoveForwardNonExistingDrone() throws Exception {
+        UUID nonExistingDroneId = UUID.randomUUID();
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/drones/{id}/goForward", nonExistingDroneId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andReturn();
+    }
+
+
 }

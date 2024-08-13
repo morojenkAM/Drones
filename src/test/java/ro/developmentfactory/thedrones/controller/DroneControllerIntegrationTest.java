@@ -9,8 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.UUID;
 import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
-import ro.developmentfactory.thedrones.repository.entity.Drone;
-import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isA;

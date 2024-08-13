@@ -4,6 +4,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -138,5 +141,51 @@ class DronePositionServiceImplTest {
         assertEquals(0, droneStatus.getCurrentPositionY());
         assertEquals(Direction.E, droneStatus.getFacingDirection());
         assertEquals(2, drone.getCountMove());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "N,E",
+            "E,S",
+            "S,W",
+            "W,N"
+    })
+    @DisplayName("Turning Direction: Valid turn should update direction correctly")
+    void turningDirection_ValidTurn_ShouldUpdateDirection(Direction initialDirection, Direction expectedDirection) {
+        // Given
+        droneStatus.setFacingDirection(initialDirection);
+        when(droneRepository.findById(any(UUID.class))).thenReturn(Optional.of(drone));
+
+        // When
+        DroneStatusResponse response = dronePositionService.turn(drone.getIdDrone(), TurnDirection.RIGHT);
+
+        // Then
+        assertEquals(expectedDirection, response.getFacingDirection());
+        verify(droneStatusRepository).save(droneStatus);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "0,0,E,1,0",
+            "0,0,N,0,1",
+            "1,1,W,0,1",
+            "1,1,S,1,0"
+    })
+    @DisplayName("Move Forward: Valid moves should update position correctly")
+    void moveForward_ValidMoves_ShouldUpdatePositionCorrectly(int startX, int startY, Direction direction, int expectedX, int expectedY) {
+        // Given
+        droneStatus.setCurrentPositionX(startX);
+        droneStatus.setCurrentPositionY(startY);
+        droneStatus.setFacingDirection(direction);
+        when(droneRepository.findById(any(UUID.class))).thenReturn(Optional.of(drone));
+
+        // When
+        DroneStatusResponse response = dronePositionService.moveForward(drone.getIdDrone());
+
+        // Then
+        assertEquals(expectedX, response.getCurrentPositionX());
+        assertEquals(expectedY, response.getCurrentPositionY());
+        assertEquals(direction, response.getFacingDirection());
+        verify(droneStatusRepository).save(droneStatus);
     }
 }
