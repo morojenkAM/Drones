@@ -20,26 +20,6 @@ import static ro.developmentfactory.thedrones.TestDefaults.*;
 
 public class DroneControllerIntegrationTest extends IntegrationTest {
 
-    private UUID insertDefaultDroneAndDroneStatus() {
-        DroneStatus droneStatus = DroneStatus.builder()
-                .idDroneStatus(DRONE_STATUS_ID)
-                .currentPositionX(DRONE_STATUS_POSITION_X)
-                .currentPositionY(DRONE_STATUS_POSITION_Y)
-                .facingDirection(DRONE_STATUS_FACING_DIRECTION)
-                .build();
-        Drone drone = Drone.builder()
-                .idDrone(DRONE_ID)
-                .name(DRONE_NAME)
-                .countMove(DRONE_COUNT_MOVE)
-                .createdAt(DRONE_CREATED_AT)
-                .updatedAt(DRONE_UPDATED_AT)
-                .droneStatus(droneStatus)
-                .build();
-        UUID newDroneId = droneRepository.save(drone).getIdDrone();
-        droneStatusRepository.save(droneStatus);
-        return newDroneId;
-    }
-
     @Test
     @DisplayName("test saveDrone to save successfully")
     public void testSaveDrone() throws Exception {
