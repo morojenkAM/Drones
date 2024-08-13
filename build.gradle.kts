@@ -53,6 +53,11 @@ dependencies {
 	testImplementation ("org.springframework.boot:spring-boot-starter-test")
 	testImplementation ("org.mockito:mockito-core")
 	testImplementation ("org.mockito:mockito-junit-jupiter")
+	implementation("org.junit.platform:junit-platform-commons")
+	testImplementation("org.junit.jupiter:junit-jupiter-params")
+
+
+
 }
 
 dependencyManagement {

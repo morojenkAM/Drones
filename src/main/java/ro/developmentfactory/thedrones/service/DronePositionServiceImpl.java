@@ -27,7 +27,6 @@ public class DronePositionServiceImpl implements DronePositionService {
         this.droneStatusRepository = droneStatusRepository;
         this.droneRepository = droneRepository;
     }
-
     @Override
     @Transactional
     public DroneStatusResponse turn(UUID idDrone, TurnDirection turnDirection) {

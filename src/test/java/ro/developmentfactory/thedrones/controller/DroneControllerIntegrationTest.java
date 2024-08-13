@@ -61,13 +61,25 @@ public class DroneControllerIntegrationTest extends IntegrationTest {
     @ValueSource(strings = {"", "  ", "\t", "\n"})
     @DisplayName("test saveDrone bad request for blank or empty drone name")
     public void testSaveDroneBlankOrEmptyName(String blankOrEmptyDroneName) throws Exception {
-        // tODO: Implement test
+        DroneRequest request = new DroneRequest(blankOrEmptyDroneName);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/drones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
     }
 
     @Test
     @DisplayName("test saveDrone bad request for null drone name")
     public void testSaveDroneNullName() throws Exception {
-        // TODO: Implement test
+        DroneRequest request = new DroneRequest(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/drones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
     }
 
     @Test
