@@ -81,7 +81,6 @@ public class DroneStatusServiceImpl implements DroneStatusService {
             throw new IllegalArgumentException("Drone must not be null");
         }
         DroneStatusResponse response = DroneStatusResponse.builder()
-                .idDroneStatus(droneStatus.getIdDroneStatus())
                 .idDrone(droneStatus.getDrone().getIdDrone())
                 .currentPositionX(droneStatus.getCurrentPositionX())
                 .currentPositionY(droneStatus.getCurrentPositionY())
