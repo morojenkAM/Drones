@@ -49,12 +49,19 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.mockito:mockito-core")
 	testImplementation("org.mockito:mockito-junit-jupiter")
+	testImplementation ("org.junit.jupiter:junit-jupiter")
+	testImplementation ("org.testcontainers:testcontainers")
+	testImplementation ("org.testcontainers:junit-jupiter")
+	testImplementation ("org.testcontainers:testcontainers")
+	testImplementation ("org.testcontainers:junit-jupiter")
+	testImplementation ("org.testcontainers:mysql")
 }
 
 
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.ai:spring-ai-bom:${property("springAiVersion")}")
+		mavenBom ("org.testcontainers:testcontainers-bom:1.17.6")
 	}
 }
 

@@ -7,16 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 import ro.developmentfactory.thedrones.repository.DroneStatusRepository;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
+import ro.developmentfactory.thedrones.testconfig.BaseRepositoryTest;
 
 import static ro.developmentfactory.thedrones.TestDefaults.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class IntegrationTest {
+@Testcontainers
+public class IntegrationTest extends BaseRepositoryTest {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -53,6 +56,4 @@ public class IntegrationTest {
         droneStatusRepository.save(droneStatus);
         return savedDrone.getIdDrone();
     }
-
-
 }

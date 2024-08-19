@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.isA;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ro.developmentfactory.thedrones.TestDefaults.*;
 
-
 public class DroneControllerIntegrationTest extends IntegrationTest {
 
     @Test
