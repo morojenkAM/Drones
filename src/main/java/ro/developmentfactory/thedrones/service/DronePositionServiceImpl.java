@@ -51,37 +51,48 @@ public class DronePositionServiceImpl implements DronePositionService {
 
         log.debug("Moving forward for drone: {}", idDrone);
 
-        Drone drone = droneRepository.findById(idDrone)
-                .orElseThrow(() -> new EntityNotFoundException("Drone with id " + idDrone + " not found"));
+       Drone drone = findDroneById(idDrone);
+       DroneStatus droneStatus = getDroneStatus(drone);
 
+       Position newPosition = calculateNewPosition(droneStatus);
+       validateMove(newPosition);
+
+       updateDronePosition(droneStatus, newPosition);
+       saveDroneStatus(droneStatus);
+
+       log.debug("Drone moved successfully to position:({}, {}", newPosition.getX(), newPosition.getY());
+       return convertToResponse(droneStatus);
+    }
+
+    private Drone findDroneById(UUID idDrone) {
+        return droneRepository.findById(idDrone)
+                .orElseThrow(() -> new EntityNotFoundException("Drone with id " + idDrone + " not found"));
+    }
+
+    private DroneStatus getDroneStatus(Drone drone) {
         DroneStatus droneStatus = drone.getDroneStatus();
         Objects.requireNonNull(droneStatus, "Drone status must not be null");
-
-        Position newPosition = calculateNewPosition(droneStatus);
-        validateMove(newPosition);
-        updatePosition(droneStatus, newPosition);
-
-        droneStatusRepository.save(droneStatus);
-        log.debug("Drone status updated successfully: {}", droneStatus);
-
-        return convertToResponse(droneStatus);
+        return droneStatus;
     }
-
-    private void updatePosition(DroneStatus droneStatus, Position newPosition) {
-        if(isPositionValid(newPosition)) {
+    private void updateDronePosition(DroneStatus droneStatus, Position newPosition) {
             droneStatus.setCurrentPositionX(newPosition.getX());
             droneStatus.setCurrentPositionY(newPosition.getY());
-            droneStatus.getDrone().setCountMove(droneStatus.getDrone().getCountMove() + 1);
+           incrementDroneMoveCount(droneStatus.getDrone());
             log.debug("New position for drone:({}, {})", newPosition.getX(), newPosition.getY());
-        }else {
-            log.error("Drone cannot move because it's at the edge of the field. Current position: ({}, {}), New position: ({}, {})",
-                    droneStatus.getCurrentPositionX(), droneStatus.getCurrentPositionY(), newPosition.getX(), newPosition.getY());
-        }
     }
 
+    private void incrementDroneMoveCount(Drone drone) {
+        drone.setCountMove(drone.getCountMove() + 1);
+    }
+
+    private void saveDroneStatus(DroneStatus droneStatus) {
+        droneStatusRepository.save(droneStatus);
+        log.debug("Drone Status saved: {}", droneStatus);
+    }
 
     private void validateMove(Position newPosition) {
-       if(!isPositionValid(newPosition)) {
+        log.debug("Validating position:({}, {})", newPosition.getX(), newPosition.getY());
+        if(!isPositionValid(newPosition)) {
            throw new IllegalArgumentException("Drone cannot move because it's at the edge of the field.");
        }
     }

@@ -1,10 +1,8 @@
 package ro.developmentfactory.thedrones.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -14,9 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static ro.developmentfactory.thedrones.TestDefaults.*;
 
 public class DroneStatusControllerIntegrationTest extends IntegrationTest {
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     @DisplayName("Should return drone status successfully when a valid drone ID is provided")
@@ -28,9 +23,13 @@ public class DroneStatusControllerIntegrationTest extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     String content = result.getResponse().getContentAsString();
+                    Assertions.assertTrue(content.contains("\"idDrone\":\"" + droneId.toString() + "\""));
+                    Assertions.assertTrue(content.contains("\"currentPositionX\":" + DRONE_STATUS_POSITION_X));
+                    Assertions.assertTrue(content.contains("\"currentPositionY\":" + DRONE_STATUS_POSITION_Y));
                     Assertions.assertTrue(content.contains("\"facingDirection\":\"" + DRONE_STATUS_FACING_DIRECTION + "\""));
                 });
     }
+
 
     @Test
     @DisplayName("Should return 404 Not Found when an invalid drone ID is provided")

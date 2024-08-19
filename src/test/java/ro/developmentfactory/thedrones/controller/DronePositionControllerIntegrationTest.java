@@ -11,11 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ro.developmentfactory.thedrones.controller.dto.TurnDirection;
-import ro.developmentfactory.thedrones.repository.entity.Direction;
-import ro.developmentfactory.thedrones.repository.entity.Drone;
-import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.service.DronePositionServiceImpl;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 import static ro.developmentfactory.thedrones.TestDefaults.*;
 
@@ -25,6 +21,9 @@ public class DronePositionControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     private DronePositionServiceImpl dronePositionServiceImpl;
+
+    @Autowired
+    private DroneFactory droneFactory;
 
     @ParameterizedTest
     @ValueSource(strings = {"RIGHT"})
@@ -95,32 +94,12 @@ public class DronePositionControllerIntegrationTest extends IntegrationTest {
     @Test
     @DisplayName("Test move forward at the edge of the field")
     public void testMoveForwardAtEdge() throws Exception {
-        UUID droneId = insertDefaultDroneAndDroneStatusAtEdge();
+        UUID droneId = droneFactory.createDroneAtEdge();
 
         mockMvc.perform(MockMvcRequestBuilders.post("/drones/{id}/goForward", droneId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andReturn();
-    }
-
-    private UUID insertDefaultDroneAndDroneStatusAtEdge() {
-        Drone drone = new Drone();
-        drone.setIdDrone(UUID.randomUUID());
-        drone.setName("TestDrone");
-        drone.setCountMove(0);
-        drone.setCreatedAt(OffsetDateTime.now());
-        drone.setUpdatedAt(OffsetDateTime.now());
-        drone = droneRepository.save(drone);
-
-        DroneStatus droneStatus = new DroneStatus();
-        droneStatus.setDrone(drone);
-        droneStatus.setCurrentPositionX(9);
-        droneStatus.setCurrentPositionY(9);
-        droneStatus.setFacingDirection(Direction.E);
-
-        droneStatusRepository.save(droneStatus);
-
-        return drone.getIdDrone();
     }
 
 }
