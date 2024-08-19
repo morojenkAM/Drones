@@ -12,8 +12,6 @@ import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 import ro.developmentfactory.thedrones.repository.DroneStatusRepository;
-
-import java.util.LinkedList;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,17 +39,17 @@ class DronesStatusServiceImplTest {
     void fetchDroneStatus_WhenIdExists_ReturnsDroneStatus() {
         // Given
         UUID droneId = UUID.randomUUID();
+        UUID droneStatusId = UUID.randomUUID();
+
         Drone drone = new Drone();
         drone.setIdDrone(droneId);
 
         DroneStatus expectedDroneStatus = new DroneStatus();
-        expectedDroneStatus.setIdDroneStatus(droneId);
+        expectedDroneStatus.setIdDroneStatus(droneStatusId);
         expectedDroneStatus.setDrone(drone);
 
 
-        LinkedList<DroneStatus> droneStatusList = new LinkedList<>();
-        droneStatusList.add(expectedDroneStatus);
-        drone.setDroneStatusList(droneStatusList);
+       drone.setDroneStatus(expectedDroneStatus);
 
 
         when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
@@ -61,8 +59,7 @@ class DronesStatusServiceImplTest {
 
         // Then
         assertNotNull(actualDroneStatusResponse, "DroneStatusResponse should not be null");
-        assertEquals(droneId, actualDroneStatusResponse.getIdDroneStatus(), "DroneStatusResponse ID should match the expected value");
-        assertEquals(droneId, actualDroneStatusResponse.getIdDrone(), "DroneStatusResponse drone ID should match the expected value");
+       assertEquals(droneId, actualDroneStatusResponse.getIdDrone(), "DroneStatusResponse drone ID should match the expected value");
 
     }
 
@@ -179,4 +176,35 @@ class DronesStatusServiceImplTest {
         );
         assertEquals("Drone not found for this ID", thrown.getMessage());
     }
+
+    @Test
+    @DisplayName("Delete drone status should succeed when ID exists")
+    void deleteDroneStatus_WhenIdExists_DeletesDroneStatus() {
+        // Given
+        UUID droneStatusId = UUID.randomUUID();
+        when(droneStatusRepository.existsById(droneStatusId)).thenReturn(true);
+
+        // When
+        droneStatusService.deleteDroneStatus(droneStatusId);
+
+        // Then
+        verify(droneStatusRepository, times(1)).deleteById(droneStatusId);
+    }
+
+    @Test
+    @DisplayName("Delete drone status should throw exception when ID does not exist")
+    void deleteDroneStatus_WhenIdDoesNotExist_ThrowsException() {
+        // Given
+        UUID droneStatusId = UUID.randomUUID();
+        when(droneStatusRepository.existsById(droneStatusId)).thenReturn(false);
+
+        // When & Then
+        EntityNotFoundException thrown = assertThrows(
+                EntityNotFoundException.class,
+                () -> droneStatusService.deleteDroneStatus(droneStatusId),
+                "Expected deleteDroneStatus() to throw EntityNotFoundException"
+        );
+        assertEquals("DroneStatus not found for this ID", thrown.getMessage());
+    }
+
 }

@@ -32,7 +32,7 @@
         private Direction facingDirection;
 
         @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-        @ManyToOne(fetch = FetchType.LAZY)
+        @OneToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "id_drone")
         private Drone drone;
     }

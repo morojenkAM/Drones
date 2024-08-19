@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -34,7 +33,7 @@ public class Drone{
     private OffsetDateTime updatedAt;
 
     @JsonBackReference
-    @OneToMany(mappedBy = "drone", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<DroneStatus> droneStatusList;
+    @OneToOne(mappedBy = "drone", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private DroneStatus droneStatus;
 
 }

@@ -142,25 +142,26 @@ public class DroneServiceImplTest {
     void givenValidDroneId_whenDeleteDrone_thenDeleteDrone() {
         // Given
         UUID droneId = UUID.randomUUID();
+        UUID droneStatusId = UUID.randomUUID();
+
+        DroneStatus droneStatus = DroneStatus.builder()
+                .idDroneStatus(droneStatusId)
+                .build();
+
         Drone drone = Drone.builder()
                 .idDrone(droneId)
-                .droneStatusList(new ArrayList<>())
+                .droneStatus(droneStatus)
                 .build();
-        DroneStatus droneStatus = DroneStatus.builder()
-                .idDroneStatus(UUID.randomUUID())
-                .drone(drone)
-                .build();
-        drone.getDroneStatusList().add(droneStatus);
 
         when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
-        doNothing().when(droneStatusService).deleteDroneStatus(droneStatus.getIdDroneStatus());
+        doNothing().when(droneStatusService).deleteDroneStatus(any(UUID.class));
 
         // When
         droneService.deleteDrone(droneId);
 
         // Then
         verify(droneRepository).deleteById(droneId);
-        verify(droneStatusService, times(drone.getDroneStatusList().size())).deleteDroneStatus(any(UUID.class));
+        verify(droneStatusService, times(1)).deleteDroneStatus(any(UUID.class));
     }
 
 

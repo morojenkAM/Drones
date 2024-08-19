@@ -36,12 +36,13 @@ public class DroneStatusServiceImpl implements DroneStatusService {
 
                 });
         logger.debug("Drone found : {}",drone);
-        if (drone.getDroneStatusList() == null || drone.getDroneStatusList().isEmpty()) {
-           logger.error("No DroneStatus found for this ID: {}",idDrone);
+        DroneStatus droneStatus = drone.getDroneStatus();
+
+        if (droneStatus == null) {
+            logger.error("No DroneStatus found for this ID: {}", idDrone);
             throw new EntityNotFoundException("No DroneStatus found for this Drone");
         }
 
-        DroneStatus droneStatus = drone.getDroneStatusList().getFirst();
         logger.debug("DroneStatus found : {}",droneStatus);
 
         return convertToResponse(droneStatus);
@@ -79,13 +80,13 @@ public class DroneStatusServiceImpl implements DroneStatusService {
         if (droneStatus.getDrone() == null) {
             throw new IllegalArgumentException("Drone must not be null");
         }
-
-        DroneStatusResponse response = new DroneStatusResponse();
-        response.setIdDroneStatus(droneStatus.getIdDroneStatus());
-        response.setIdDrone(droneStatus.getDrone().getIdDrone());
-        response.setCurrentPositionX(droneStatus.getCurrentPositionX());
-        response.setCurrentPositionY(droneStatus.getCurrentPositionY());
-        response.setFacingDirection(droneStatus.getFacingDirection());
+        DroneStatusResponse response = DroneStatusResponse.builder()
+                .idDrone(droneStatus.getDrone().getIdDrone())
+                .currentPositionX(droneStatus.getCurrentPositionX())
+                .currentPositionY(droneStatus.getCurrentPositionY())
+                .facingDirection(droneStatus.getFacingDirection())
+                .build();
+        logger.debug("Converted drone status to response: {}", response);
 
         return response;
     }

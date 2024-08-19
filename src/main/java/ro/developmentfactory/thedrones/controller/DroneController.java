@@ -42,7 +42,7 @@ public class DroneController {
 
 
     //Update operation
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public DroneResponse updateDrone(@Valid @RequestBody DroneRequest droneRequest, @PathVariable("id") UUID idDrone) {
         return droneService.updateNameDrone(droneRequest, idDrone);
     }

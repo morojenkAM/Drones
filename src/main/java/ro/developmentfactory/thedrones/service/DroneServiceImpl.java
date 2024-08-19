@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
 import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
-import ro.developmentfactory.thedrones.repository.entity.Direction;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
@@ -15,17 +14,15 @@ import ro.developmentfactory.thedrones.repository.DroneRepository;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import static ro.developmentfactory.thedrones.service.Defaults.*;
+
 @Service
 public class DroneServiceImpl implements DroneService {
 
-    private static final int DEFAULT_POSITION_X = 0;
-    private static final int DEFAULT_POSITION_Y = 0;
-    private static final Direction DEFAULT_DIRECTION = Direction.N;
     private static final Logger log = LoggerFactory.getLogger(DroneServiceImpl.class);
 
     private final DroneRepository droneRepository;
@@ -59,7 +56,7 @@ public class DroneServiceImpl implements DroneService {
                 .drone(savedDrone)
                 .currentPositionX(DEFAULT_POSITION_X)
                 .currentPositionY(DEFAULT_POSITION_Y)
-                .facingDirection(DEFAULT_DIRECTION)
+                .facingDirection(DEFAULT_FACING_DIRECTION)
                 .build();
         droneStatusService.saveDroneStatus(droneStatus);
         log.info("Saving drone status : {} ",droneStatus);
@@ -87,13 +84,12 @@ public class DroneServiceImpl implements DroneService {
         Drone drone = droneRepository.findById(idDrone)
                 .orElseThrow(() -> new EntityNotFoundException("Drone with id " + idDrone + " not found"));
 
-        List<DroneStatus> droneStatusList = drone.getDroneStatusList();
-        if (droneStatusList == null) {
-            droneStatusList = Collections.emptyList();
-        }
-        for (DroneStatus droneStatus : droneStatusList) {
+        DroneStatus droneStatus = drone.getDroneStatus();
+        if (droneStatus != null) {
             droneStatusService.deleteDroneStatus(droneStatus.getIdDroneStatus());
+
         }
+
 
         droneRepository.deleteById(idDrone);
         log.info("Drone with ID: {} deleted", idDrone);
